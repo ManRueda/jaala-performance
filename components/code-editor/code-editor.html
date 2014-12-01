@@ -1,0 +1,112 @@
+<template>
+    <style>
+        @import "http://components.geekonaut.de/code-editor/codemirror/lib/codemirror.css";
+
+        :host { display: block; }
+        .CodeMirror { height: 100%; }
+    </style>
+    <textarea id="editor"></textarea>
+    <!-- Hack to get the content into the textarea -->
+    <div style="display: none" id="initialContent"><content></content></div>
+</template>
+<script src="codemirror/lib/codemirror.js"></script>
+<script>
+  var CodeEditor = undefined;
+  (function(currentScript) {
+
+    var elemPrototype = Object.create(HTMLPreElement.prototype),
+        editorReadyCallbacks = [];
+
+    Object.defineProperty(elemPrototype, "theme", {
+      get: function() { return this.editor.getOption('theme'); },
+      set: function(newTheme) {
+        var style = document.createElement("style");
+        style.textContent = '@import "http://components.geekonaut.de/code-editor/codemirror/theme/' + newTheme + '.css";';
+        this.root.appendChild(style);
+        this.editor.setOption('theme', newTheme);
+      }
+    });
+
+    Object.defineProperty(elemPrototype, "mode", {
+      get: function() { return this.editor.getOption('mode'); },
+      set: function(newMode) {
+        var self = this;
+        var script = document.createElement("script");
+        script.src = 'http://components.geekonaut.de/code-editor/codemirror/mode/' + newMode + '/' + newMode + '.js';
+        script.onload = function() {
+          self.editor.setOption('mode', newMode);
+        };
+        this.root.appendChild(script);
+      }
+    });
+
+    Object.defineProperty(elemPrototype, "srcText", {
+      get: function() { return this.editor.getValue(); },
+      set: function(newText) {
+        this.editor.setValue(newText);
+      }
+    });
+
+    Object.defineProperty(elemPrototype, "src", {
+      get: function() { return this.srcUrl; },
+      set: function(newSrcUrl) {
+        this.srcUrl = newSrcUrl;
+        var self = this;
+        var xhr = new XMLHttpRequest();
+        xhr.onload = function() {
+          self.editor.setValue(this.responseText);
+        }
+        xhr.open('get', newSrcUrl, false);
+        xhr.send();
+      }
+    });
+
+    elemPrototype.createdCallback = function() {
+      this.root = this.createShadowRoot();
+      var tplContent = currentScript.ownerDocument.querySelector("template").content,
+          node       = document.importNode(tplContent, true);
+
+      this.root.appendChild(node);
+    };
+
+    elemPrototype.attachedCallback = function() {
+        var editorTextArea = this.root.querySelector('#editor'),
+            initialContent = "",
+            contentNodes = this.root.querySelector('content').getDistributedNodes();
+
+        for(var i=0, len=contentNodes.length;i<len;i++) {
+          initialContent += contentNodes[i].textContent;
+        }
+
+        editorTextArea.value = initialContent;
+        editorTextArea.textContent = initialContent;
+
+        var self = this;
+        // Another hack because CodeMirror acts up when inserted before the element is attached to the DOM
+        requestAnimationFrame(function waitUntilVisible() {
+          if(self.root.querySelector("style")) {
+            self.editor = CodeMirror.fromTextArea(editorTextArea, {mode: 'javascript'});
+
+            if(self.attributes.theme) self.theme = self.attributes.theme.value;
+            if(self.attributes.mode)  self.mode  = self.attributes.mode.value;
+            if(self.attributes.src)   self.src   = self.attributes.src.value;
+
+            var i = editorReadyCallbacks.length;
+            while(i--) {
+              setTimeout(editorReadyCallbacks[i], 1);
+            }
+          } else requestAnimationFrame(waitUntilVisible);
+        });
+    };
+
+    elemPrototype.onReady = function(callback) {
+      if(this.editor) {
+        callback();
+        return;
+      }
+      editorReadyCallbacks.push(callback);
+    }
+
+    CodeEditor = document.registerElement("code-editor", { prototype: elemPrototype });
+  }(document._currentScript || document.currentScript));
+</script>
