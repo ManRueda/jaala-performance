@@ -12,6 +12,9 @@ body {
   font-weight: normal;
 }
 
+a.forkMe{
+  z-index: 999;
+}
 
 div.container > div.left {
   float: left;
@@ -35,6 +38,9 @@ div.container:after {
   content:"";
   display: table;
   clear: both;
+}
+div.container {
+  margin-top: 11px;
 }
 
 code-editor{

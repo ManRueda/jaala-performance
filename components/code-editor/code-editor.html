@@ -1,6 +1,6 @@
 <template>
     <style>
-        @import "stylesheets/codemirror.css";
+        @import "css/codemirror.css";
 
         :host { display: block; }
         .CodeMirror { height: 100%; }
@@ -21,7 +21,7 @@
       get: function() { return this.editor.getOption('theme'); },
       set: function(newTheme) {
         var style = document.createElement("style");
-        style.textContent = '@import "stylesheets/' + newTheme + '.css";';
+        style.textContent = '@import "css/' + newTheme + '.css";';
         this.root.appendChild(style);
         this.editor.setOption('theme', newTheme);
       }
@@ -32,7 +32,7 @@
       set: function(newMode) {
         var self = this;
         var script = document.createElement("script");
-        script.src = 'javascripts/' + newMode + '.js';
+        script.src = 'js/' + newMode + '.js';
         script.onload = function() {
           self.editor.setOption('mode', newMode);
         };
