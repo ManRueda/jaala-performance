@@ -24,12 +24,21 @@
     }
   }
 
+  function plusArray(arr){
+    var value = 0;
+    for(var i = 0; i < arr.length; i++){
+      value = value + arr[i];
+    }
+    return value;
+  }
+
 
 
   function Comparer(){
+    this.opts = arguments[0];
     this.tests = [];
 
-    for(var i = 0; i < arguments.length; i++){
+    for(var i = 1; i < arguments.length; i++){
       this.tests.push({
         name: arguments[i].name(),
         code: arguments[i].code(),
@@ -46,16 +55,24 @@
         var func      = new Function([], this.tests[i].code);
         var timeStart = undefined;
         var timeEnd   = undefined;
+        var results   = [];
         var validate = testError(func);
         if (validate)
           return validate;
+        for (var j = 1; j <= this.opts.repeats; j++){
+          timeStart = performance.now();
+          func();
+          timeEnd = performance.now();
+          results.push(timeEnd - timeStart);
+        }
+        
 
-        timeStart = performance.now();
-        func();
-        timeEnd = performance.now();
-        this.tests[i].starts = timeStart;
-        this.tests[i].ends = timeEnd;
-        this.tests[i].time = this.tests[i].ends - this.tests[i].starts;
+        if (this.opts.repeats == 1){
+          this.tests[i].starts = timeStart;
+          this.tests[i].ends = timeEnd;
+        }
+
+        this.tests[i].time = plusArray(results) / this.opts.repeats;
         this.bestTime = 
           this.bestTime > this.tests[i].time || this.bestTime == undefined 
           ? this.tests[i].time 

@@ -19,6 +19,8 @@
     <link rel="import" href="components/paper-button/paper-button.html">
     <link rel="import" href="components/paper-toast/paper-toast.html">
     <link rel="import" href="components/paper-dialog/paper-dialog.html">
+    <link rel="import" href="components/core-collapse/core-collapse.html">
+    <link rel="import" href="components/paper-slider/paper-slider.html">
 
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/pygment_trac.css">
@@ -45,6 +47,20 @@
           <code-editor mode="javascript" ></code-editor>
         </div>
         <div class="center" layout vertical right>
+          <div class="header" onclick="document.querySelector('#options').toggle();">
+            <h3>Options</h3>
+          </div>
+          <core-collapse id="options">
+            <div class="collapse-content">
+              <div>
+                <span>Test repetitions</span>
+                <span id="repeatsLabel"></span>
+              </div>
+              <paper-slider id="repeats" min="1" max="100" value="1">
+                </paper-slider>
+              </paper-slider>
+            </div>
+          </core-collapse>
           <paper-button raised id="runTest">
             <core-icon icon="send"></core-icon>
             Run test!!
@@ -69,6 +85,21 @@
 
       var comparar ;
 
+
+  
+      var ratings = document.querySelector('#repeats');
+
+      if (localStorage.getItem('repeatsValue'))
+        ratings.setAttribute('value', localStorage.getItem('repeatsValue'));     
+
+      var slideChangeCB = function(){
+        document.querySelector('#repeatsLabel').textContent = ratings.value;
+
+        localStorage.setItem('repeatsValue', ratings.value);
+      }
+      ratings.addEventListener('core-change', slideChangeCB);
+    
+
       document.querySelector('#resultDialog paper-button').addEventListener('click', function click(argument) {
         document.querySelector('html /deep/ #resultDialog').close();
       });
@@ -78,7 +109,7 @@
         document.querySelector('#errorToast').dismiss();
 
 
-        comparar = new Comparer(editorOne, editorTwo);
+        comparar = new Comparer({repeats: ratings.value}, editorOne, editorTwo);
         var result = comparar.run();
 
         document.querySelector('#resultDialog div').innerText = '';
@@ -89,12 +120,17 @@
             var H3 = document.createElement('h3');
             H3.innerText = comparar.tests[i].name;
             var UL = document.createElement('UL');
-            var LI = document.createElement('li');
-            LI.innerText = 'Starts: ' + comparar.tests[i].starts;
-            UL.appendChild(LI);
-            LI = document.createElement('li');
-            LI.innerText = 'Ends: ' + comparar.tests[i].ends;
-            UL.appendChild(LI);
+            var LI;
+            if (comparar.tests[i].starts){
+              LI = document.createElement('li');
+              LI.innerText = 'Starts: ' + comparar.tests[i].starts;
+              UL.appendChild(LI);
+            }
+            if (comparar.tests[i].ends){
+              LI = document.createElement('li');
+              LI.innerText = 'Ends: ' + comparar.tests[i].ends;
+              UL.appendChild(LI);
+            }
             LI = document.createElement('li');
             LI.innerText = 'Total Time: ' + comparar.tests[i].time;
             if (comparar.tests[i].time === comparar.bestTime)
