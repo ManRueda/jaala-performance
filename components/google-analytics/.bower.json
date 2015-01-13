@@ -30,8 +30,8 @@
     "tag": "v0.0.6",
     "commit": "181b7b90929bc2ecda2174895c97d15e8a56c8e9"
   },
-  "_source": "/home/manrueda/dev/google-analytics-element",
+  "_source": "git://github.com/cesarwbr/google-analytics-element.git",
   "_target": "~0.0.6",
-  "_originalSource": "../google-analytics-element/",
+  "_originalSource": "google-analytics",
   "_direct": true
 }
