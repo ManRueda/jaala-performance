@@ -14,7 +14,7 @@ So i made this small tool to make my day more easy and i want to share it to mak
     $ bower install
     ```
 
-2. Run an static server (as tj/serve)
+2. Run an static server (as [tj/serve](https://github.com/tj/serve))
     ```shell
     $ serve .
     ```
